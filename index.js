@@ -1,7 +1,10 @@
 const express = require('express');
 const app = express();
-const port = 3001;
+const port = 5000;
 var mysql = require('mysql');
+var cors = require('cors');
+var bodyParser = require('body-parser');
+
 var connection = mysql.createConnection({
 	host : 'us-cdbr-iron-east-03.cleardb.net',
 	user : 'b2974b50757180',
@@ -10,11 +13,24 @@ var connection = mysql.createConnection({
 });
 
 connection.connect(function(err) {
-  if (err) throw err
+  if (err)
+  { 
+  	throw err
+  }
+  else
+  {
+
+  }
+
   console.log('Connected to MySQL database')
 })
-
-app.get('/', (req,res)=>res.send("<h1>Page hit</h1>"));
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
+app.post('/', function(req,res){
+	var uname = req.body.username;
+	console.log(uname);
+});
 
 app.listen(port, ()=> console.log("Listening on port 3001"));
 
