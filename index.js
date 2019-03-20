@@ -12,26 +12,43 @@ var connection = mysql.createConnection({
 	database : 'heroku_90095f85482d913',
 });
 
-connection.connect(function(err) {
-  if (err)
-  { 
-  	throw err
-  }
-  else
-  {
 
-  }
-
-  console.log('Connected to MySQL database')
-})
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
-app.post('/', function(req,res){
+
+//Handle login
+app.post('/login', function(req,res){
+  connection.connect(function(err) {
+  if (err) throw err;
+  console.log('Connected to MySQL database');
+})
 	var uname = req.body.username;
 	console.log(uname);
+  connection.end();
 });
 
-app.listen(port, ()=> console.log("Listening on port 3001"));
+//Handle register
+app.post('/register', function(req,res){
+  console.log("Register request recieved");
+  connection.connect(function(err) {
+  if (err) throw err;
+  console.log('Connected to MySQL database');
+  });
+  var username = req.body.username;
+  var password = req.body.password;
+  var email = req.body.email;
+  var new_user_query = "insert into users values('"+email+"','"+username+"','"+password+"')";
+  connection.query(new_user_query, function(err, result){
+    if(err) throw err;
+    res.write("Registered");
+    console.log("Row inserted");
+    connection.end();
+  })
+});
+
+
+
+app.listen(port, ()=> console.log("Listening on port 5000"));
 
 //mysql://b2974b50757180:6545ca82@us-cdbr-iron-east-03.cleardb.net/heroku_90095f85482d913?reconnect=true
