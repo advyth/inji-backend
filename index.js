@@ -19,31 +19,34 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 //Handle login
 app.post('/login', function(req,res){
-  connection.connect(function(err) {
-  if (err) throw err;
-  console.log('Connected to MySQL database');
-})
-	var uname = req.body.username;
-	console.log(uname);
-  connection.end();
+	var email = req.body.email;
+	var password = req.body.password;
+	console.log("email "+ email + " password "+password);
+	//var login_query = 'select * from users';
+	var login_query = "select * from users where email='"+email+"' and password='"+password+"'";
+	connection.query(login_query, function(err, result){
+		if(result.length > 0)
+		{
+			res.send("Success");
+		}
+		else
+		{
+			res.send("Failed");
+		}
+	});
 });
 
 //Handle register
 app.post('/register', function(req,res){
   console.log("Register request recieved");
-  connection.connect(function(err) {
-  if (err) throw err;
-  console.log('Connected to MySQL database');
-  });
   var username = req.body.username;
   var password = req.body.password;
   var email = req.body.email;
   var new_user_query = "insert into users values('"+email+"','"+username+"','"+password+"')";
   connection.query(new_user_query, function(err, result){
     if(err) throw err;
-    res.write("Registered");
+    res.send("Registered");
     console.log("Row inserted");
-    connection.end();
   })
 });
 
