@@ -50,6 +50,44 @@ app.post('/register', function(req,res){
   })
 });
 
+app.post('/admin/add', function(req,res){
+	console.log("Add movie response recieved");
+	var moviename = req.body.moviename;
+	var director = req.body.director;
+	var genre = req.body.genre;
+	var actor = req.body.actor;
+	var rating = req.body.rating;
+	var url = req.body.url;
+	var movie_add_query = "insert into movie_list values('"+moviename+"','"+director+"','"+genre+"','"+actor+"',"+rating+",'"+url+"')";
+	connection.query(movie_add_query, function(err,result){
+		if(err) throw err;
+		res.send("Added 1 row");
+	});
+});
+
+app.post('/api/get/movies', function(req, res){
+	console.log("Send movie request recieved");
+	var auth = req.body.auth;
+	if(auth)
+	{
+		var movie_get_query = "select * from movie_list";
+		connection.query(movie_get_query, function(err, result){
+			if(err) throw err;
+			res.send(result);
+		});
+
+	}
+});
+
+
+//Keep the connection alive
+
+setInterval(()=>{
+	connection.query('SELECT 1',(err, result)=>{
+		
+	});
+},5000);
+
 
 
 app.listen(port, ()=> console.log("Listening on port 5000"));
