@@ -24,14 +24,19 @@ app.post('/login', function(req,res){
 	console.log("email "+ email + " password "+password);
 	//var login_query = 'select * from users';
 	var login_query = "select * from users where email='"+email+"' and password='"+password+"'";
+	var auth = [];
 	connection.query(login_query, function(err, result){
 		if(result.length > 0)
 		{
-			res.send("Success");
+			auth.push(result[0].username);
+			auth.push("Success");
+			res.send(auth);
 		}
 		else
 		{
-			res.send("Failed");
+			auth.push(null);
+			auth.push("Failed");
+			res.send(auth);
 		}
 	});
 });
@@ -93,3 +98,4 @@ setInterval(()=>{
 app.listen(port, ()=> console.log("Listening on port 5000"));
 
 //mysql://b2974b50757180:6545ca82@us-cdbr-iron-east-03.cleardb.net/heroku_90095f85482d913?reconnect=true
+//6545ca82
