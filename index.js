@@ -1,9 +1,12 @@
 const express = require('express');
 const app = express();
-const port = 5000;
-var mysql = require('mysql');
-var cors = require('cors');
-var bodyParser = require('body-parser');
+const port = 5000; //The port that the server serves from.
+var mysql = require('mysql'); //MySQL middleware
+var cors = require('cors'); //For handling CORS requests.
+var bodyParser = require('body-parser'); //Library for parsing POST requests.
+var unid = require('uniqid'); //Library for generating unique ID's.
+
+//Create the connection
 
 var connection = mysql.createConnection({
 	host : 'us-cdbr-iron-east-03.cleardb.net',
@@ -63,7 +66,7 @@ app.post('/admin/add', function(req,res){
 	var actor = req.body.actor;
 	var rating = req.body.rating;
 	var url = req.body.url;
-	var movie_add_query = "insert into movie_list values('"+moviename+"','"+director+"','"+genre+"','"+actor+"',"+rating+",'"+url+"')";
+	var movie_add_query = "insert into movie_list values('"+moviename+"','"+director+"','"+genre+"','"+actor+"',"+rating+",'"+url+"',"+unid()+")";
 	connection.query(movie_add_query, function(err,result){
 		if(err) throw err;
 		res.send("Added 1 row");
