@@ -104,7 +104,13 @@ app.post('/api/add/review', function(req, res){
 	console.log("Review add request reciever");
 	var id = req.body.id;
 	var review = req.body.review;
-	res.send("review recieved");
+	var rating = req.body.rating;
+	var username = req.body.username;
+	var review_add_query = "insert into reviews values('"+username+"','"+review+"',"+rating+",'"+id+"')";
+	connection.query(review_add_query, function(err, result){
+		if(err) throw err;
+		res.send("Added");
+	});
 
 });
 
