@@ -6,6 +6,7 @@ var cors = require('cors'); //For handling CORS requests.
 var bodyParser = require('body-parser'); //Library for parsing POST requests.
 var unid = require('uniqid'); //Library for generating unique ID's.
 
+
 //Create the connection
 
 var connection = mysql.createConnection({
@@ -85,6 +86,26 @@ app.post('/api/get/movies', function(req, res){
 		});
 
 	}
+});
+app.post('/api/get/single/movie', function(req, res){
+	console.log("Single movie request recieved");
+	var auth = req.body.auth;
+	if(auth)
+	{	var id = req.body.id;
+		var single_movie_query = "Select * from movie_list where id='"+id+"'";
+		connection.query(single_movie_query, function(err, result){
+			if(err) throw err;
+			res.send(result);
+		});
+	}
+
+});
+app.post('/api/add/review', function(req, res){
+	console.log("Review add request reciever");
+	var id = req.body.id;
+	var review = req.body.review;
+	res.send("review recieved");
+
 });
 
 
