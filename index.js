@@ -114,6 +114,14 @@ app.post('/api/add/review', function(req, res){
 
 });
 
+app.post('/api/get/reviews', function(req, res){
+	var id = req.body.id;
+	var get_review_query = "select * from reviews where id='"+id+"'";
+	connection.query(get_review_query, function(err, result){
+		if(err) throw err;
+		res.send(result);
+	});
+});
 
 //Keep the connection alive
 
