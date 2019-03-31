@@ -123,6 +123,25 @@ app.post('/api/get/reviews', function(req, res){
 	});
 });
 
+app.post('/api/search/movie',function(req,res){
+	var movie = req.body.movie;
+	console.log("Search request for "+ movie+" recieved");
+	var search_query = "select * from movie_list where name like '%"+movie+"%'";
+	connection.query(search_query, function(err, result){
+		if(err) throw err;
+		if(result[0] == undefined)
+		{
+			res.send("empty");
+		}
+		else
+		{
+			console.log(result[0].name);
+			res.send(result);
+		}
+		
+	})
+});
+
 //Keep the connection alive
 
 setInterval(()=>{
