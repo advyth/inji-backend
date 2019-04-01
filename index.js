@@ -52,10 +52,21 @@ app.post('/register', function(req,res){
   var password = req.body.password;
   var email = req.body.email;
   var new_user_query = "insert into users values('"+email+"','"+username+"','"+password+"')";
-  connection.query(new_user_query, function(err, result){
+  var check_query = "select * from users where email='"+email+"'";
+  connection.query(check_query, function(err, result){
     if(err) throw err;
-    res.send("Registered");
-    console.log("Row inserted");
+    if(result.length == 0)
+    {
+    	connection.query(new_user_query, function(err, result){
+    		res.send("Registered");
+    		console.log("Row inserted");
+    	});
+    }
+    else
+    {
+    	res.send("Exists");
+    }
+    
   })
 });
 
@@ -141,7 +152,15 @@ app.post('/api/search/movie',function(req,res){
 		
 	})
 });
+app.post('/api/autocomplete/', function(req, res){
+	var movie = req.body.search;
+	var search_query = "select name, id from movie_list where name like '%"+movie+"%'";
+	connection.query(search_query, function(err, result){
+		if(err) throw err;
+		res.send(result);
+	});
 
+});
 //Keep the connection alive
 
 setInterval(()=>{
