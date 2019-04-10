@@ -16,11 +16,38 @@ var connection = mysql.createConnection({
 	database : 'heroku_90095f85482d913',
 });
 
+var mysqlPool = mysql.createPool({
+	connectionLimit : 100,
+	host : 'us-cdbr-iron-east-03.cleardb.net',
+	user : 'b2974b50757180',
+	password : '6545ca82',
+	database : 'heroku_90095f85482d913',
+	debug : false,
+});
+
 
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
+app.use(function (req, res, next) {
+
+    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+
+    // Pass to next layer of middleware
+    next();
+});
 //Handle login
 app.post('/login', function(req,res){
 	var email = req.body.email;
@@ -29,7 +56,7 @@ app.post('/login', function(req,res){
 	//var login_query = 'select * from users';
 	var login_query = "select * from users where email='"+email+"' and password='"+password+"'";
 	var auth = [];
-	connection.query(login_query, function(err, result){
+	mysqlPool.query(login_query, function(err, result){
 		if(result.length > 0)
 		{
 			auth.push(result[0].username);
@@ -53,7 +80,7 @@ app.post('/register', function(req,res){
   var email = req.body.email;
   var new_user_query = "insert into users values('"+email+"','"+username+"','"+password+"')";
   var check_query = "select * from users where email='"+email+"'";
-  connection.query(check_query, function(err, result){
+  mysqlPool.query(check_query, function(err, result){
     if(err) throw err;
     if(result.length == 0)
     {
@@ -69,24 +96,7 @@ app.post('/register', function(req,res){
     
   })
 });
-app.use(function (req, res, next) {
 
-    // Website you wish to allow to connect
-    res.setHeader('Access-Control-Allow-Origin', '*');
-
-    // Request methods you wish to allow
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-
-    // Request headers you wish to allow
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-
-    // Set to true if you need the website to include cookies in the requests sent
-    // to the API (e.g. in case you use sessions)
-    res.setHeader('Access-Control-Allow-Credentials', true);
-
-    // Pass to next layer of middleware
-    next();
-});
 app.post('/admin/add', function(req,res){
 	console.log("Add movie response recieved");
 	var moviename = req.body.moviename;
@@ -96,7 +106,7 @@ app.post('/admin/add', function(req,res){
 	var rating = req.body.rating;
 	var url = req.body.url;
 	var movie_add_query = "insert into movie_list values('"+moviename+"','"+director+"','"+genre+"','"+actor+"',"+rating+",'"+url+"',"+unid()+")";
-	connection.query(movie_add_query, function(err,result){
+	mysqlPool.query(movie_add_query, function(err,result){
 		if(err) throw err;
 		res.send("Added 1 row");
 	});
@@ -108,7 +118,7 @@ app.post('/api/get/movies', function(req, res){
 	if(auth)
 	{
 		var movie_get_query = "select * from movie_list";
-		connection.query(movie_get_query, function(err, result){
+		mysqlPool.query(movie_get_query, function(err, result){
 			if(err) throw err;
 			res.send(result);
 		});
@@ -121,7 +131,7 @@ app.post('/api/get/single/movie', function(req, res){
 	if(auth)
 	{	var id = req.body.id;
 		var single_movie_query = "Select * from movie_list where id='"+id+"'";
-		connection.query(single_movie_query, function(err, result){
+		mysqlPool.query(single_movie_query, function(err, result){
 			if(err) throw err;
 			res.send(result);
 		});
@@ -135,7 +145,7 @@ app.post('/api/add/review', function(req, res){
 	var rating = req.body.rating;
 	var username = req.body.username;
 	var review_add_query = "insert into reviews values('"+username+"','"+review+"',"+rating+",'"+id+"')";
-	connection.query(review_add_query, function(err, result){
+	mysqlPool.query(review_add_query, function(err, result){
 		if(err) throw err;
 		res.send("Added");
 	});
@@ -145,7 +155,7 @@ app.post('/api/add/review', function(req, res){
 app.post('/api/get/reviews', function(req, res){
 	var id = req.body.id;
 	var get_review_query = "select * from reviews where id='"+id+"'";
-	connection.query(get_review_query, function(err, result){
+	mysqlPool.query(get_review_query, function(err, result){
 		if(err) throw err;
 		res.send(result);
 	});
@@ -155,7 +165,7 @@ app.post('/api/search/movie',function(req,res){
 	var movie = req.body.movie;
 	console.log("Search request for "+ movie+" recieved");
 	var search_query = "select * from movie_list where name like '%"+movie+"%'";
-	connection.query(search_query, function(err, result){
+	mysqlPool.query(search_query, function(err, result){
 		if(err) throw err;
 		if(result[0] == undefined)
 		{
@@ -172,7 +182,7 @@ app.post('/api/search/movie',function(req,res){
 app.post('/api/autocomplete/', function(req, res){
 	var movie = req.body.search;
 	var search_query = "select name, id from movie_list where name like '%"+movie+"%'";
-	connection.query(search_query, function(err, result){
+	mysqlPool.query(search_query, function(err, result){
 		if(err) throw err;
 		res.send(result);
 	});
@@ -180,11 +190,6 @@ app.post('/api/autocomplete/', function(req, res){
 });
 //Keep the connection alive
 
-setInterval(()=>{
-	connection.query('SELECT 1',(err, result)=>{
-		
-	});
-},5000);
 
 
 
