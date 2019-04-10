@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 5000; //The port that the server serves from.
+const port = process.env.PORT || 5000; //The port that the server serves from.
 var mysql = require('mysql'); //MySQL middleware
 var cors = require('cors'); //For handling CORS requests.
 var bodyParser = require('body-parser'); //Library for parsing POST requests.
