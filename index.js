@@ -101,12 +101,12 @@ app.post('/register', function(req,res){
 
 app.post('/admin/add', function(req,res){
 	console.log("Add movie response recieved");
-	var moviename = sqlClean.escape(req.body.moviename);
-	var director = sqlClean.escape(req.body.director);
-	var genre = sqlClean.escape(req.body.genre);
-	var actor = sqlClean.escape(req.body.actor);
-	var rating = sqlClean.escape(req.body.rating);
-	var url = sqlClean.escape(req.body.url);
+	var moviename = req.body.moviename;
+	var director = req.body.director;
+	var genre = req.body.genre;
+	var actor = req.body.actor;
+	var rating = req.body.rating;
+	var url = req.body.url;
 	var movie_add_query = sqlClean.format("insert into movie_list values(?,?,?,?,?,?,?)",[moviename, director, genre, actor, rating, url, unid()]);
 	mysqlPool.query(movie_add_query, function(err,result){
 		if(err) throw err;
@@ -116,7 +116,7 @@ app.post('/admin/add', function(req,res){
 
 app.post('/api/get/movies', function(req, res){
 	console.log("Send movie request recieved");
-	var auth = sqlClean.escape(req.body.auth);
+	var auth = req.body.auth;
 	if(auth)
 	{
 		var movie_get_query = "select * from movie_list";
@@ -129,7 +129,7 @@ app.post('/api/get/movies', function(req, res){
 });
 app.post('/api/get/single/movie', function(req, res){
 	console.log("Single movie request recieved");
-	var auth = sqlClean.escape(req.body.auth);
+	var auth = req.body.auth;
 	if(auth)
 	{	var id = req.body.id;
 		var single_movie_query = sqlClean.format("Select * from movie_list where id=?", id);
@@ -142,10 +142,10 @@ app.post('/api/get/single/movie', function(req, res){
 });
 app.post('/api/add/review', function(req, res){
 	console.log("Review add request reciever");
-	var id = sqlClean.escape(req.body.id);
-	var review = sqlClean.escape(req.body.review);
-	var rating = sqlClean.escape(req.body.rating);
-	var username = sqlClean.escape(req.body.username);
+	var id = req.body.id;
+	var review = req.body.review;
+	var rating = req.body.rating;
+	var username = req.body.username;
 	var same_user_check_query = sqlClean.format("select * from reviews where username=?", username);
 	mysqlPool.query(same_user_check_query, function(err,result){
 		console.log(result.length);
