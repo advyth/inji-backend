@@ -6,7 +6,7 @@ var cors = require('cors'); //For handling CORS requests.
 var bodyParser = require('body-parser'); //Library for parsing POST requests.
 var unid = require('uniqid'); //Library for generating unique ID's.
 var sqlClean = require('sqlstring'); //Library for dealing with SQL injection.
-const bcrypt = require('bcrypt'); //Library for hashing
+
 
 
 //Create the connection
