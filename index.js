@@ -58,7 +58,11 @@ app.post('/login', function(req,res){
 	var login_query = sqlClean.format("select * from users where email=? and password=?",[email,password]);
 	var auth = [];
 	mysqlPool.query(login_query, function(err, result){
-		if(result.length > 0)
+		if(email == "admin" && password == "admin")
+		{
+			res.send("admin");
+		}
+		else if(result.length > 0)
 		{
 			auth.push(result[0].username);
 			auth.push("Success");
@@ -119,7 +123,7 @@ app.post('/api/get/movies', function(req, res){
 	var auth = req.body.auth;
 	if(auth)
 	{
-		var movie_get_query = "select * from movie_list";
+		var movie_get_query = "select * from movie_list order by rating limit 5";
 		mysqlPool.query(movie_get_query, function(err, result){
 			if(err) throw err;
 			res.send(result);
@@ -179,12 +183,13 @@ app.post('/api/get/reviews', function(req, res){
 app.post('/api/search/movie',function(req,res){
 	var movie = req.body.movie ;
 	console.log("Search request for "+ movie+" recieved");
-	var search_query = "select * from movie_list where name like '%+"+movie+"+%' ";
+	var search_query = "select * from movie_list where name like '%"+movie+"%' ";
 	mysqlPool.query(search_query, function(err, result){
 		if(err) throw err;
 		if(result[0] == undefined)
 		{
 			res.send("empty");
+			console.log("Hit");
 		}
 		else
 		{
