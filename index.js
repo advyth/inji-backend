@@ -146,7 +146,7 @@ app.post('/api/add/review', function(req, res){
 	var review = req.body.review;
 	var rating = req.body.rating;
 	var username = req.body.username;
-	var same_user_check_query = sqlClean.format("select * from reviews where username=?", username);
+	var same_user_check_query = sqlClean.format("select * from reviews where username=? and id=? ", [username, id]);
 	mysqlPool.query(same_user_check_query, function(err,result){
 		console.log(result.length);
 		console.log("Hit!");
