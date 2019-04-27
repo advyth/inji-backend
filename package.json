@@ -1,6 +1,9 @@
 {
   "name": "inji-backend",
   "version": "1.0.0",
+  "engines": {
+    "node": "8.10.0"
+  },
   "description": "The backend for inji-react",
   "main": "index.js",
   "scripts": {
@@ -10,6 +13,7 @@
   "author": "Advyth Ashok",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^3.0.6",
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
     "express": "^4.16.4",

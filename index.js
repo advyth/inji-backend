@@ -6,6 +6,7 @@ var cors = require('cors'); //For handling CORS requests.
 var bodyParser = require('body-parser'); //Library for parsing POST requests.
 var unid = require('uniqid'); //Library for generating unique ID's.
 var sqlClean = require('sqlstring'); //Library for dealing with SQL injection.
+const bcrypt = require('bcrypt'); //hashing Library.
 
 
 
@@ -55,18 +56,22 @@ app.post('/login', function(req,res){
 	var email = req.body.email;
 	var password = req.body.password;
 	console.log("email "+ email + " password "+password);
-	var login_query = sqlClean.format("select * from users where email=? and password=?",[email,password]);
+	var login_query = sqlClean.format("select * from users where email=? ",email);
 	var auth = [];
 	mysqlPool.query(login_query, function(err, result){
+	;
 		if(email == "admin" && password == "admin")
 		{
 			res.send("admin");
 		}
-		else if(result.length > 0)
+		else if((result.length > 0) && (bcrypt.compareSync(password, result[0].password)))
 		{
+		
 			auth.push(result[0].username);
 			auth.push("Success");
 			res.send(auth);
+			
+			
 		}
 		else
 		{
@@ -84,7 +89,11 @@ app.post('/register', function(req,res){
   var password = req.body.password;
 	var email = req.body.email;
 	const saltRounds = 10;
-  var new_user_query = sqlClean.format("insert into users values(?,?,?)",[email, username, password]);
+	var passwordHash;
+	var salt = bcrypt.genSaltSync(saltRounds);
+	var hash = bcrypt.hashSync(password, salt);
+	console.log(hash);
+  var new_user_query = sqlClean.format("insert into users values(?,?,?)",[email, username, hash]);
   var check_query = "select * from users where email='"+email+"'";
   mysqlPool.query(check_query, function(err, result){
     if(err) throw err;
@@ -110,8 +119,10 @@ app.post('/admin/add', function(req,res){
 	var genre = req.body.genre;
 	var actor = req.body.actor;
 	var rating = req.body.rating;
+	var synopsis = req.body.synopsis;
+	var tags = req.body.tags;
 	var url = req.body.url;
-	var movie_add_query = sqlClean.format("insert into movie_list values(?,?,?,?,?,?,?)",[moviename, director, genre, actor, rating, url, unid()]);
+	var movie_add_query = sqlClean.format("insert into movie_list values(?,?,?,?,?,?,?,?,?)",[moviename, director, genre, actor, rating, url, unid(), synopsis, tags]);
 	mysqlPool.query(movie_add_query, function(err,result){
 		if(err) throw err;
 		res.send("Added 1 row");
@@ -160,7 +171,7 @@ app.post('/api/add/review', function(req, res){
 		}
 		else
 		{
-			var review_add_query = sqlClean.format("insert into reviews values(?,?,?,?)",[username,review, rating, id]);
+			var review_add_query = sqlClean.format("insert into reviews values(?,?,?,?,?)",[username,review, rating, id, unid()]);
 			mysqlPool.query(review_add_query, function(err, result){
 				if(err) throw err;
 				res.send("Added");
