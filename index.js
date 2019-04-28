@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 5000; //The port that the server serves from.
@@ -6,7 +7,6 @@ var cors = require('cors'); //For handling CORS requests.
 var bodyParser = require('body-parser'); //Library for parsing POST requests.
 var unid = require('uniqid'); //Library for generating unique ID's.
 var sqlClean = require('sqlstring'); //Library for dealing with SQL injection.
-const bcrypt = require('bcrypt'); //hashing Library.
 
 
 
@@ -155,13 +155,30 @@ app.post('/api/get/single/movie', function(req, res){
 	}
 
 });
+app.post('/api/review/rate', function(req, res){
+	var review_id = req.body.review_id;
+	var type = req.body.review_type;
+	if(type=="like")
+	{
+		var rating_query = sqlClean.format("update reviews set likes = (likes + 1) where review_id=?", review_id);
+	}
+	else
+	{
+		var rating_query = sqlClean.format("update reviews set dislikes = (dislikes + 1) where review_id=?", review_id);
+	}
+	mysqlPool.query(rating_query, function(err, result){
+		if(err) throw err;
+		res.send("rated");
+	})
+});
 app.post('/api/add/review', function(req, res){
-	console.log("Review add request reciever");
+	console.log("Review add request recieved");
 	var id = req.body.id;
 	var review = req.body.review;
 	var rating = req.body.rating;
 	var username = req.body.username;
 	var same_user_check_query = sqlClean.format("select * from reviews where username=? and id=? ", [username, id]);
+	
 	mysqlPool.query(same_user_check_query, function(err,result){
 		console.log(result.length);
 		console.log("Hit!");
@@ -171,11 +188,32 @@ app.post('/api/add/review', function(req, res){
 		}
 		else
 		{
-			var review_add_query = sqlClean.format("insert into reviews values(?,?,?,?,?)",[username,review, rating, id, unid()]);
-			mysqlPool.query(review_add_query, function(err, result){
-				if(err) throw err;
-				res.send("Added");
-			});
+			if(req.body.kid_friendly == 1)
+			{
+				var kid_rating_query = sqlClean.format("update movie_list set kid_friendly = (kid_friendly+100)/2 where id=?", id);
+				mysqlPool.query(kid_rating_query, function(err, result){
+					if(err) throw err;
+					var review_add_query = sqlClean.format("insert into reviews values(?,?,?,?,?)",[username,review, rating, id, unid()]);
+					mysqlPool.query(review_add_query, function(err, result){
+						if(err) throw err;
+						res.send("Added");
+					});
+				});
+			}
+			else
+			{
+				var kid_rating_query = sqlClean.format("update movie_list set kid_friendly=(kid_friendly+0)/2 where id=?",id);
+				mysqlPool.query(kid_rating_query, function(err, result){
+					if(err) throw err;
+					var review_add_query = sqlClean.format("insert into reviews values(?,?,?,?,?)",[username,review, rating, id, unid()]);
+					mysqlPool.query(review_add_query, function(err, result){
+						if(err) throw err;
+						res.send("Added");
+					});
+							
+				});
+			}
+			
 		}
 	});
 	
