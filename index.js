@@ -164,12 +164,8 @@ app.post('/api/review/rate', function(req, res){
 	//check if already rated
 	//
 
-	var check_if_exists = sqlClean.format("select * from review_rating where review_id=? and email=? and id=?",[review_id, email, id]);
-	mysqlPool.query(check_if_exists, function(err, result){
-		if(err) throw err;
-		if(result.length == 0)
-		{
-			var check_if_user_review = sqlClean.format("select * from reviews where email=? and id=?", [email,id]);
+
+			var check_if_user_review = sqlClean.format("select * from reviews where email=? and review_id=?", [email,review_id]);
 			console.log(email +" "+ id + " "+ review_id);
 			mysqlPool.query(check_if_user_review, function(err, result)
 			{
@@ -194,8 +190,8 @@ app.post('/api/review/rate', function(req, res){
 				}
 		
 			});
-			}
-	});
+			
+
 });
 app.post('/api/add/review', function(req, res){
 	console.log("Review add request recieved");
