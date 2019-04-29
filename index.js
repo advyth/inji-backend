@@ -122,7 +122,7 @@ app.post('/admin/add', function(req,res){
 	var synopsis = req.body.synopsis;
 	var tags = req.body.tags;
 	var url = req.body.url;
-	var movie_add_query = sqlClean.format("insert into movie_list values(?,?,?,?,?,?,?,?,?)",[moviename, director, genre, actor, rating, url, unid(), synopsis, tags]);
+	var movie_add_query = sqlClean.format("insert into movie_list values(?,?,?,?,?,?,?,?,?,?)",[moviename, director, genre, actor, rating, url, unid(), synopsis, tags,100]);
 	mysqlPool.query(movie_add_query, function(err,result){
 		if(err) throw err;
 		res.send("Added 1 row");
@@ -155,21 +155,47 @@ app.post('/api/get/single/movie', function(req, res){
 	}
 
 });
+
 app.post('/api/review/rate', function(req, res){
 	var review_id = req.body.review_id;
 	var type = req.body.review_type;
-	if(type=="like")
-	{
-		var rating_query = sqlClean.format("update reviews set likes = (likes + 1) where review_id=?", review_id);
-	}
-	else
-	{
-		var rating_query = sqlClean.format("update reviews set dislikes = (dislikes + 1) where review_id=?", review_id);
-	}
-	mysqlPool.query(rating_query, function(err, result){
+	var id = req.body.id;
+	var email = req.body.email;
+	//check if already rated
+	//
+
+	var check_if_exists = sqlClean.format("select * from review_rating where review_id=? and email=? and id=?",[review_id, email, id]);
+	mysqlPool.query(check_if_exists, function(err, result){
 		if(err) throw err;
-		res.send("rated");
-	})
+		if(result.length == 0)
+		{
+			var check_if_user_review = sqlClean.format("select * from reviews where email=? and id=?", [email,id]);
+			console.log(email +" "+ id + " "+ review_id);
+			mysqlPool.query(check_if_user_review, function(err, result)
+			{
+				if(result.length == 0)
+				{
+					if(type=="like")
+					{
+						var rating_query = sqlClean.format("update reviews set likes = (likes + 1) where review_id=?", review_id);
+					}
+					else
+					{
+						var rating_query = sqlClean.format("update reviews set dislikes = (dislikes + 1) where review_id=?", review_id);
+					}
+					mysqlPool.query(rating_query, function(err, result){
+						if(err) throw err;
+						var add_rating = sqlClean.format("insert into review_rating values(?,?,?,?)",[type, review_id, id, email]);
+						mysqlPool.query(add_rating,function(err, result){
+							if(err) throw err;
+							res.send("Rated");
+						})
+					})
+				}
+		
+			});
+			}
+	});
 });
 app.post('/api/add/review', function(req, res){
 	console.log("Review add request recieved");
@@ -177,8 +203,21 @@ app.post('/api/add/review', function(req, res){
 	var review = req.body.review;
 	var rating = req.body.rating;
 	var username = req.body.username;
+	var email = req.body.email;
 	var same_user_check_query = sqlClean.format("select * from reviews where username=? and id=? ", [username, id]);
-	
+	var score = [];
+	score[1] = 0;
+	score[2] = 25;
+	score[3] = 50;
+	score[4] = 75;
+	score[5] = 100;
+
+	var addMovieScore = sqlClean.format("update movie_list set rating = (rating + ?)/2 where id = ?", [score[rating], id]);
+	mysqlPool.query(addMovieScore, function(err, result){
+		if(err) throw err;
+		console.log("Score added");
+	});
+	mysqlPool.query()
 	mysqlPool.query(same_user_check_query, function(err,result){
 		console.log(result.length);
 		console.log("Hit!");
@@ -193,7 +232,7 @@ app.post('/api/add/review', function(req, res){
 				var kid_rating_query = sqlClean.format("update movie_list set kid_friendly = (kid_friendly+100)/2 where id=?", id);
 				mysqlPool.query(kid_rating_query, function(err, result){
 					if(err) throw err;
-					var review_add_query = sqlClean.format("insert into reviews values(?,?,?,?,?)",[username,review, rating, id, unid()]);
+					var review_add_query = sqlClean.format("insert into reviews values(?,?,?,?,?,?,?,?)",[username,review, rating, email,id, unid(), 0, 0]);
 					mysqlPool.query(review_add_query, function(err, result){
 						if(err) throw err;
 						res.send("Added");
@@ -205,7 +244,7 @@ app.post('/api/add/review', function(req, res){
 				var kid_rating_query = sqlClean.format("update movie_list set kid_friendly=(kid_friendly+0)/2 where id=?",id);
 				mysqlPool.query(kid_rating_query, function(err, result){
 					if(err) throw err;
-					var review_add_query = sqlClean.format("insert into reviews values(?,?,?,?,?)",[username,review, rating, id, unid()]);
+					var review_add_query = sqlClean.format("insert into reviews values(?,?,?,?,?,?,?,?)",[username,review, rating,email, id, unid(), 0, 0]);
 					mysqlPool.query(review_add_query, function(err, result){
 						if(err) throw err;
 						res.send("Added");
@@ -222,7 +261,9 @@ app.post('/api/add/review', function(req, res){
 
 app.post('/api/get/reviews', function(req, res){
 	var id = req.body.id;
+	var email = req.body.email;
 	var get_review_query = sqlClean.format("select * from reviews where id=?",id);
+	var reviews = [];
 	mysqlPool.query(get_review_query, function(err, result){
 		if(err) throw err;
 		res.send(result);
