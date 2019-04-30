@@ -169,7 +169,11 @@ app.post('/api/review/rate', function(req, res){
 			console.log(email +" "+ id + " "+ review_id);
 			mysqlPool.query(check_if_user_review, function(err, result)
 			{
-				if(result.length == 0)
+				var duplication = sqlClean.format("select * from review_rating where email=? and review_id=?", [email, review_id])
+				mysqlPool.query(duplication, function(err, result){
+					if(result.length == 0)
+					{
+						if(result.length == 0)
 				{
 					if(type=="like")
 					{
@@ -188,6 +192,9 @@ app.post('/api/review/rate', function(req, res){
 						})
 					})
 				}
+					}
+				})
+				
 		
 			});
 			
