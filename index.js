@@ -295,7 +295,7 @@ app.post('/api/search/movie',function(req,res){
 });
 app.post('/api/autocomplete/', function(req, res){
 	var movie = req.body.search;
-	var search_query = "select name, id from movie_list where name like '%"+movie+"%'";
+	var search_query = "select name, id from movie_list where name like '%"+movie+"%' limit 7";
 	mysqlPool.query(search_query, function(err, result){
 		if(err) throw err;
 		res.send(result);
