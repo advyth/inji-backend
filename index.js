@@ -193,6 +193,14 @@ app.post('/api/review/rate', function(req, res){
 			
 
 });
+app.post('/api/all', function(req, res){
+	var all_query = sqlClean.format("select * from movie_list");
+	mysqlPool.query(all_query, function(err, result)
+	{
+		if(err) throw err;
+		res.send(result);
+	})
+});
 app.post('/api/add/review', function(req, res){
 	console.log("Review add request recieved");
 	var id = req.body.id;
