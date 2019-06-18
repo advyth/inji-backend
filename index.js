@@ -13,18 +13,18 @@ var sqlClean = require('sqlstring'); //Library for dealing with SQL injection.
 //Create the connection
 
 var connection = mysql.createConnection({
-	host : 'us-cdbr-iron-east-03.cleardb.net',
-	user : 'b2974b50757180',
-	password : '6545ca82',
-	database : 'heroku_90095f85482d913',
+	host : "",
+	user : "",
+	password : "",
+	database : "",
 });
 
 var mysqlPool = mysql.createPool({
 	connectionLimit : 100,
-	host : 'us-cdbr-iron-east-03.cleardb.net',
-	user : 'b2974b50757180',
-	password : '6545ca82',
-	database : 'heroku_90095f85482d913',
+	host : "",
+	user : "",
+	password : "",
+	database : "",
 	debug : false,
 });
 
@@ -316,5 +316,3 @@ app.post('/api/autocomplete/', function(req, res){
 
 app.listen(port, ()=> console.log("Server has started and is ready for those requests :)"));
 
-//mysql://b2974b50757180:6545ca82@us-cdbr-iron-east-03.cleardb.net/heroku_90095f85482d913?reconnect=true
-//6545ca82
